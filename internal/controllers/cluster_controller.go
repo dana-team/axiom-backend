@@ -1,0 +1,90 @@
+package controllers
+
+import (
+	"context"
+	"fmt"
+	"github.com/dana-team/axiom-backend/internal/types"
+	"github.com/dana-team/axiom-backend/internal/utils"
+	v1alpha "github.com/dana-team/axiom-operator/api/v1alpha1"
+	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"net/http"
+	"time"
+)
+
+type ClusterController struct {
+	mongoClient *utils.MongoClient
+}
+
+func NewClusterController(mongoClient *utils.MongoClient) *ClusterController {
+	return &ClusterController{
+		mongoClient: mongoClient,
+	}
+}
+
+func (cc *ClusterController) GetClusters(c *gin.Context) {
+	params := types.QueryParams{}
+	if err := c.ShouldBindQuery(&params); err != nil {
+		c.JSON(http.StatusBadRequest, types.APIResponse{
+			Success: false,
+			Message: "Invalid query parameters" + err.Error(),
+		})
+		return
+	}
+
+	collection := cc.mongoClient.GetCollection("clusterInfo")
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	filter := bson.M{}
+	if params.ClusterID != "" {
+		filter["clusterID"] = params.ClusterID
+	}
+
+	if params.KubeVersion != "" {
+		filter["kubernetesVersion"] = bson.M{
+			"$regex":   fmt.Sprintf("^v?%s(\\.|$)", params.KubeVersion),
+			"$options": "i",
+		}
+	}
+
+	sortOrder := 1
+	if params.SortOrder == "desc" {
+		sortOrder = -1
+	}
+
+	findOptions := options.Find()
+	findOptions.SetLimit(int64(params.Limit))
+	findOptions.SetSort(bson.D{{Key: params.SortBy, Value: sortOrder}})
+
+	cursor, err := collection.Find(ctx, filter, findOptions)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, types.APIResponse{
+			Success: false,
+			Message: "Failed to query clusters:" + err.Error(),
+		})
+		return
+	}
+	defer cursor.Close(ctx)
+
+	clusters := []v1alpha.ClusterInfoStatus{}
+	if err := cursor.All(ctx, &clusters); err != nil {
+		c.JSON(http.StatusInternalServerError, types.APIResponse{
+			Success: false,
+			Message: "Failed to decode clusters:" + err.Error(),
+		})
+		return
+	}
+
+	count, err := collection.CountDocuments(ctx, filter)
+	if err != nil {
+		count = 0
+	}
+
+	c.JSON(http.StatusOK, types.APIResponse{
+		Success: true,
+		Data:    clusters,
+		Count:   count,
+	})
+}
