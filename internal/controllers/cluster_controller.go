@@ -41,13 +41,20 @@ func (cc *ClusterController) GetClusters(c *gin.Context) {
 		return
 	}
 
-	collection := cc.mongoClient.GetCollection("clusterInfo")
+	collection := cc.mongoClient.GetCollection(utils.CollectionName)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	filter := bson.M{}
 	if params.ClusterID != "" {
 		filter["clusterID"] = params.ClusterID
+	}
+
+	if params.Name != "" {
+		filter["name"] = bson.M{
+			"$regex":   params.Name,
+			"$options": "i",
+		}
 	}
 
 	if params.KubeVersion != "" {

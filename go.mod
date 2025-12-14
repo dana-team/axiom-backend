@@ -3,7 +3,7 @@ module github.com/dana-team/axiom-backend
 go 1.24.3
 
 require (
-	github.com/dana-team/axiom-operator v0.0.0-20250623093109-3bc47889bbf9
+	github.com/dana-team/axiom-operator v0.0.5
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.10.1
 	github.com/joho/godotenv v1.5.1
