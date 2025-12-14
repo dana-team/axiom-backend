@@ -67,6 +67,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: dist/values-installer.yaml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   package-and-push-chart:
     name: Package and Push Helm Chart
