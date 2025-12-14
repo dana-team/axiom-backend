@@ -105,7 +105,7 @@ jobs:
 
       - name: Trim prefix from version
         id: version
-        run: echo "value=$(echo ${{ github.ref_name }} | sed 's/^release-//')" >> "$GITHUB_OUTPUT"
+        run: echo "value=$(echo ${GITHUB_REF##*/} | sed 's/^release-//')" >> "$GITHUB_OUTPUT"
 
       - name: Helm package
         id: build
