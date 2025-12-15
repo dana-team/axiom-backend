@@ -47,7 +47,7 @@ jobs:
           file: Dockerfile
           platforms: linux/amd64
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.REPOSITORY_NAME }}:${GITHUB_REF##*/}
+          tags: ${{ env.REGISTRY }}/${{ env.REPOSITORY_NAME }}:${{ github.event.release.tag_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -105,7 +105,7 @@ jobs:
 
       - name: Trim prefix from version
         id: version
-        run: echo "value=$(echo ${GITHUB_REF##*/} | sed 's/^release-//')" >> "$GITHUB_OUTPUT"
+        run: echo "value=$(echo ${{ github.event.release.tag_name }} | sed 's/^release-//')" >> "$GITHUB_OUTPUT"
 
       - name: Helm package
         id: build
