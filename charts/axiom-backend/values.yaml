@@ -11,6 +11,8 @@ image:
 
 config:
   name: backend-config
+  dbName: axiom
+  mongoURI: ""
 
 # This is to override the chart name.
 nameOverride: ""
