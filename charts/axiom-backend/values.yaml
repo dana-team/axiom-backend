@@ -26,6 +26,11 @@ service:
 route:
   issuer: issuer-name
   host: axiom-backend.example.com
+  cluster: ocp4-test-cluster.example.com
+  domain: example.com
+
+providerConfig:
+  name: dns-default
 
 resources:
   limits:
