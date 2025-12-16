@@ -11,6 +11,8 @@ image:
 
 config:
   name: backend-config
+  dbName: axiom
+  mongoURI: ""
 
 # This is to override the chart name.
 nameOverride: ""
@@ -26,6 +28,11 @@ service:
 route:
   issuer: issuer-name
   host: axiom-backend.example.com
+  cluster: ocp4-test-cluster.example.com
+  domain: example.com
+
+providerConfig:
+  name: dns-default
 
 resources:
   limits:
